@@ -1,0 +1,171 @@
+@baseURL = http://localhost:3000
+@solicitanteToken = COLE_AQUI_O_TOKEN_DO_SOLICITANTE
+@tecnicoToken = COLE_AQUI_O_TOKEN_DO_TECNICO
+@adminToken = COLE_AQUI_O_TOKEN_DO_ADMIN
+
+# Execute o cadastro apenas uma vez ou troque os e-mails antes de repetir.
+
+### Cadastro público de solicitante - execute antes do login
+POST {{baseURL}}/solicitantes
+Content-Type: application/json
+
+{
+  "nome": "Fernando Souza",
+  "email": "fernando.souza@empresa.com",
+  "setor": "Tecnologia da Informação",
+  "senha": "senha-segura-123"
+}
+
+### Login do solicitante - copie o token para @solicitanteToken
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "fernando.souza@empresa.com",
+  "senha": "senha-segura-123"
+}
+
+### Erro esperado: solicitante não pode listar todos os solicitantes (403)
+GET {{baseURL}}/solicitantes
+Authorization: Bearer {{solicitanteToken}}
+
+### Login do administrador - copie o token para @adminToken
+### Execute npm run admin:create antes desta requisição.
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com",
+  "senha": "SENHA_DO_ADMIN_CONFIGURADA_NO_AMBIENTE"
+}
+
+### Cadastro de técnico - somente ADMIN
+POST {{baseURL}}/tecnicos
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "nome": "Carla Técnica",
+  "email": "carla.tecnica@empresa.com",
+  "senha": "senha-segura-123"
+}
+
+### Login do técnico - copie o token para @tecnicoToken
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "carla.tecnica@empresa.com",
+  "senha": "senha-segura-123"
+}
+
+### Consultar usuário autenticado
+GET {{baseURL}}/auth/me
+Authorization: Bearer {{solicitanteToken}}
+
+### Health check
+GET {{baseURL}}/health
+
+### Consultar categorias
+GET {{baseURL}}/categorias
+Authorization: Bearer {{solicitanteToken}}
+
+### Consultar técnicos
+GET {{baseURL}}/tecnicos
+Authorization: Bearer {{solicitanteToken}}
+
+### Listar solicitantes - somente ADMIN
+GET {{baseURL}}/solicitantes
+Authorization: Bearer {{adminToken}}
+
+### Consultar solicitante por ID - somente ADMIN
+GET {{baseURL}}/solicitantes/1
+Authorization: Bearer {{adminToken}}
+
+### Abrir chamado - somente o SOLICITANTE cria o próprio chamado
+POST {{baseURL}}/chamados
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "titulo": "Monitor com tela piscando",
+  "descricao": "O monitor principal fica apagando a cada 5 minutos.",
+  "prioridade": "ALTA",
+  "solicitante_id": 1,
+  "categoria_id": 1
+}
+
+### Observação: para SOLICITANTE, solicitante_id é sobrescrito pelo ID do token.
+
+### Erro esperado: técnico não pode criar chamado (403)
+POST {{baseURL}}/chamados
+Authorization: Bearer {{tecnicoToken}}
+
+### Erro: solicitante inexistente
+POST {{baseURL}}/chamados
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "titulo": "Computador não liga",
+  "descricao": "Sem energia.",
+  "prioridade": "ALTA",
+  "solicitante_id": 999,
+  "categoria_id": 1
+}
+
+### Erro: EM_ATENDIMENTO sem técnico
+PUT {{baseURL}}/chamados/1
+Content-Type: application/json
+Authorization: Bearer {{tecnicoToken}}
+
+{
+  "status": "EM_ATENDIMENTO"
+}
+
+### Atribuir técnico e iniciar atendimento
+PUT {{baseURL}}/chamados/1
+Content-Type: application/json
+Authorization: Bearer {{tecnicoToken}}
+
+{
+  "tecnico_id": 1,
+  "status": "EM_ATENDIMENTO"
+}
+
+### Erro: CONCLUIDO sem solução
+PUT {{baseURL}}/chamados/1
+Content-Type: application/json
+Authorization: Bearer {{tecnicoToken}}
+
+{
+  "status": "CONCLUIDO"
+}
+
+### Concluir chamado com solução
+PUT {{baseURL}}/chamados/1
+Content-Type: application/json
+Authorization: Bearer {{tecnicoToken}}
+
+{
+  "status": "CONCLUIDO",
+  "solucao": "Trocado o cabo DisplayPort defeituoso por um novo."
+}
+
+### Filtrar chamados
+GET {{baseURL}}/chamados?status=CONCLUIDO&prioridade=ALTA
+Authorization: Bearer {{tecnicoToken}}
+
+### Relatório resumido por status
+GET {{baseURL}}/relatorios/chamados-por-status
+Authorization: Bearer {{tecnicoToken}}
+
+### Erro esperado: rota protegida sem token (401)
+GET {{baseURL}}/categorias
+
+### Erro esperado: cadastro de técnico sem token (401)
+POST {{baseURL}}/tecnicos
+
+### Remover chamado - execute somente por último, com token de técnico
+DELETE {{baseURL}}/chamados/1
+Authorization: Bearer {{tecnicoToken}}
