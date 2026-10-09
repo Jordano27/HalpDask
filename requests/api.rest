@@ -166,6 +166,173 @@ GET {{baseURL}}/categorias
 ### Erro esperado: cadastro de técnico sem token (401)
 POST {{baseURL}}/tecnicos
 
-### Remover chamado - execute somente por último, com token de técnico
+### Login com e-mail invalido (400)
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "email-invalido",
+  "senha": "123"
+}
+
+### Consultar perfil sem token (401)
+GET {{baseURL}}/auth/me
+
+### Alterar senha do usuario autenticado (200)
+### Execute com a senha atual correta e atualize o login depois.
+PATCH {{baseURL}}/auth/password
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "senha_atual": "senha-segura-123",
+  "nova_senha": "senha-nova-123"
+}
+
+### Alterar senha com senha atual incorreta (401)
+PATCH {{baseURL}}/auth/password
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "senha_atual": "senha-incorreta-123",
+  "nova_senha": "senha-nova-123"
+}
+
+### Consultar categoria por ID (200)
+GET {{baseURL}}/categorias/1
+Authorization: Bearer {{solicitanteToken}}
+
+### Consultar categoria inexistente (404)
+GET {{baseURL}}/categorias/999999
+Authorization: Bearer {{solicitanteToken}}
+
+### Consultar categoria sem token (401)
+GET {{baseURL}}/categorias/1
+
+### Consultar tecnico por ID (200)
+GET {{baseURL}}/tecnicos/1
+Authorization: Bearer {{solicitanteToken}}
+
+### Consultar tecnico inexistente (404)
+GET {{baseURL}}/tecnicos/999999
+Authorization: Bearer {{solicitanteToken}}
+
+### Listar tecnicos sem token (401)
+GET {{baseURL}}/tecnicos
+
+### Atualizar tecnico pelo administrador (200)
+PUT {{baseURL}}/tecnicos/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "nome": "Tecnico atualizado",
+  "email": "tecnico.atualizado@empresa.com"
+}
+
+### Atualizar tecnico sem permissao (403)
+PUT {{baseURL}}/tecnicos/1
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "nome": "Alteracao nao permitida",
+  "email": "nao.permitido@empresa.com"
+}
+
+### Listar solicitantes sem token (401)
+GET {{baseURL}}/solicitantes
+
+### Consultar solicitante por ID (200)
+GET {{baseURL}}/solicitantes/1
+Authorization: Bearer {{adminToken}}
+
+### Consultar solicitante inexistente (404)
+GET {{baseURL}}/solicitantes/999999
+Authorization: Bearer {{adminToken}}
+
+### Atualizar solicitante pelo administrador (200)
+PUT {{baseURL}}/solicitantes/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "nome": "Solicitante atualizado",
+  "email": "solicitante.atualizado@empresa.com",
+  "setor": "Tecnologia"
+}
+
+### Atualizar solicitante por solicitante (403)
+PUT {{baseURL}}/solicitantes/1
+Content-Type: application/json
+Authorization: Bearer {{solicitanteToken}}
+
+{
+  "nome": "Alteracao nao permitida",
+  "email": "nao.permitido@empresa.com",
+  "setor": "Teste"
+}
+
+### Listar chamados sem filtro como tecnico (200)
+GET {{baseURL}}/chamados
+Authorization: Bearer {{tecnicoToken}}
+
+### Consultar chamado por ID como tecnico (200)
+GET {{baseURL}}/chamados/1
+Authorization: Bearer {{tecnicoToken}}
+
+### Consultar chamado inexistente (404)
+GET {{baseURL}}/chamados/999999
+Authorization: Bearer {{tecnicoToken}}
+
+### Listar chamados sem token (401)
+GET {{baseURL}}/chamados
+
+### Alterar chamado pelo administrador (403)
+PUT {{baseURL}}/chamados/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": "ABERTO"
+}
+
+### Excluir chamado pelo administrador (403)
+DELETE {{baseURL}}/chamados/1
+Authorization: Bearer {{adminToken}}
+
+### Relatorio por status como administrador (403)
+GET {{baseURL}}/relatorios/chamados-por-status
+Authorization: Bearer {{adminToken}}
+
+### Relatorio sem token (401)
+GET {{baseURL}}/relatorios/chamados-por-status
+
+### Exclusao de tecnico inexistente (404)
+DELETE {{baseURL}}/tecnicos/999999
+Authorization: Bearer {{adminToken}}
+
+### Exclusao de solicitante inexistente (404)
+DELETE {{baseURL}}/solicitantes/999999
+Authorization: Bearer {{adminToken}}
+
+### Exclusao de solicitante por solicitante (403)
+DELETE {{baseURL}}/solicitantes/1
+Authorization: Bearer {{solicitanteToken}}
+
+### Exclusao de tecnico por solicitante (403)
+DELETE {{baseURL}}/tecnicos/1
+Authorization: Bearer {{solicitanteToken}}
+
+### Exclusao de chamado pelo tecnico (200) 
 DELETE {{baseURL}}/chamados/1
 Authorization: Bearer {{tecnicoToken}}
+
+### Exclusao de tecnico pelo administrador (200)
+DELETE {{baseURL}}/tecnicos/1
+Authorization: Bearer {{adminToken}}
+
+### Exclusao de solicitante pelo administrador (200)
+DELETE {{baseURL}}/solicitantes/1
+Authorization: Bearer {{adminToken}}
