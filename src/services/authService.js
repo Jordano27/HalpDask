@@ -2,22 +2,25 @@ const bcrypt = require('bcryptjs');
 
 const SolicitanteModel = require('../models/solicitanteModel');
 const TecnicoModel = require('../models/tecnicoModel');
+const AdminModel = require('../models/adminModel');
 const { createToken } = require('../config/auth');
 const { ValidationError, UnauthorizedError } = require('../utils/customErrors');
 const { requiredText, normalizeEmail, validatePassword, parseId } = require('../utils/validation');
 
-const TIPOS_USUARIO = ['SOLICITANTE', 'TECNICO'];
+const TIPOS_USUARIO = ['SOLICITANTE', 'TECNICO', 'ADMIN'];
 
 function normalizeTipo(value) {
     const tipo = requiredText(value, 'tipo').toUpperCase();
     if (!TIPOS_USUARIO.includes(tipo)) {
-        throw new ValidationError('Tipo inválido. Use SOLICITANTE ou TECNICO.');
+        throw new ValidationError('Tipo inválido. Use SOLICITANTE, TECNICO ou ADMIN.');
     }
     return tipo;
 }
 
 function getModel(tipo) {
-    return tipo === 'SOLICITANTE' ? SolicitanteModel : TecnicoModel;
+    if (tipo === 'SOLICITANTE') return SolicitanteModel;
+    if (tipo === 'TECNICO') return TecnicoModel;
+    return AdminModel;
 }
 
 function publicUser(user) {
@@ -34,13 +37,15 @@ class AuthService {
         data = data || {};
         const email = normalizeEmail(data.email);
         const senha = validatePassword(data.senha);
-        const [requester, technician] = await Promise.all([
+        const [requester, technician, admin] = await Promise.all([
             SolicitanteModel.findByEmailWithPassword(email),
-            TecnicoModel.findByEmailWithPassword(email)
+            TecnicoModel.findByEmailWithPassword(email),
+            AdminModel.findByEmailWithPassword(email)
         ]);
         const candidates = [
             requester && { ...requester, tipo: 'SOLICITANTE' },
-            technician && { ...technician, tipo: 'TECNICO' }
+            technician && { ...technician, tipo: 'TECNICO' },
+            admin && { ...admin, tipo: 'ADMIN' }
         ].filter(Boolean);
         const validUsers = [];
         for (const candidate of candidates) {

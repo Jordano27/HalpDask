@@ -1,10 +1,13 @@
 {
   "name": "halpdask",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API REST de HelpDesk com arquitetura em camadas",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "check": "node --check server.js && node --check src/app.js",
+    "admin:create": "node scripts/createAdmin.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +21,15 @@
   },
   "homepage": "https://github.com/Jordano27/HalpDask#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.24.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
