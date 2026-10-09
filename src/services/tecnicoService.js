@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 
 const TecnicoModel = require('../models/tecnicoModel');
 const SolicitanteModel = require('../models/solicitanteModel');
+const AdminModel = require('../models/adminModel');
 const { ValidationError, NotFoundError } = require('../utils/customErrors');
 const { parseId, requiredText, normalizeEmail, validatePassword } = require('../utils/validation');
 
@@ -32,6 +33,10 @@ class TecnicoService {
         if (requester) {
             throw new ValidationError('Este e-mail já está cadastrado para um solicitante.');
         }
+        const admin = await AdminModel.findByEmail(email);
+        if (admin) {
+            throw new ValidationError('Este e-mail já está cadastrado para um administrador.');
+        }
         const senhaHash = await bcrypt.hash(senha, 12);
         return TecnicoModel.create({ nome, email, senhaHash });
     }
@@ -49,6 +54,10 @@ class TecnicoService {
         const requester = await SolicitanteModel.findByEmail(email);
         if (requester) {
             throw new ValidationError('Este e-mail já está em uso por um solicitante.');
+        }
+        const admin = await AdminModel.findByEmail(email);
+        if (admin) {
+            throw new ValidationError('Este e-mail já está em uso por um administrador.');
         }
         await TecnicoModel.update(tecnicoId, { nome, email });
     }
